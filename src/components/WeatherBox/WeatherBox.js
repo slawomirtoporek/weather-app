@@ -3,17 +3,16 @@ import WeatherSummary from '../WeatherSummary/WeatherSummary';
 import Loader from '../Loader/Loader';
 import ErrorBox from '../ErrorBox/ErrorBox';
 import { useCallback, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { addWeather } from '../../redux/weatherRedux';
 
-const WeatherBox = props => {
+const WeatherBox = () => {
 
-  const [weatherData, setWeatherData] = useState('');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
-
+  const dispatch = useDispatch(); 
 
   const handleCityChange = useCallback(city => {
-
-    setWeatherData('');
     setPending(true);
     setError(false);
 
@@ -23,24 +22,24 @@ const WeatherBox = props => {
         return res.json()
         .then(data => {
           setPending(false);
-          setWeatherData({
+          dispatch(addWeather({
             city: data.name,
             temp: data.main.temp,
             icon: data.weather[0].icon,
             description: data.weather[0].main
-          });
+          }));
         });
       } else {
         setError(true);
       }
     });
-  }, []);
+  }, [dispatch]);
 
   return (
     <section>
       <PickCity action={handleCityChange} />
-      { (weatherData && !pending && !error) && <WeatherSummary {...weatherData} /> }
-      { (pending && !error) && <Loader /> }
+      { !pending && !error && <WeatherSummary /> }
+      { pending && !error && <Loader /> }
       { error && <ErrorBox>There is no such city!</ErrorBox> }
     </section>
   )
