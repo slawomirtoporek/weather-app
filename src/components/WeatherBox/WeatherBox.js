@@ -13,23 +13,29 @@ const WeatherBox = props => {
     setPending(true);
 
     fetch(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=c10111407243349ece9cd8bba4a7a1ad&units=metric`)
-    .then(res => res.json())
-    .then(data => {
-      setPending(false);
-      setWeatherData({
-        city: data.name,
-        temp: data.main.temp,
-        icon: data.weather[0].icon,
-        description: data.weather[0].main
-      });
+    .then(res => {
+      if(res.status === 200) {
+        return res.json()
+        .then(data => {
+          setPending(false);
+          setWeatherData({
+            city: data.name,
+            temp: data.main.temp,
+            icon: data.weather[0].icon,
+            description: data.weather[0].main
+          });
+        });
+      } else {
+        alert('ERROR');
+      }
     });
-  }, []);
+  }, [])
 
   return (
     <section>
       <PickCity action={handleCityChange} />
-      { (weatherData && pending === false) && <WeatherSummary {...weatherData} /> }
-      <Loader />
+      { (weatherData && !pending) && <WeatherSummary {...weatherData} /> }
+      { pending && <Loader /> }
     </section>
   )
 };
